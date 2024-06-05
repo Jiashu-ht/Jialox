@@ -26,3 +26,5 @@ You can start learning from version 0.1.0, gradually improve from a small projec
 - release/0.1.0
 
 This version completes the content of [Section 4 Scanning](http://www.craftinginterpreters.com/scanning.html).
+
+**Added** nested block block comments - Section 4 challege 4
