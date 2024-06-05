@@ -3,12 +3,11 @@ mod token_type;
 mod token;
 mod scanner;
 use error::*;
-use token_type::*;
-use token::*;
+// use token_type::*;
+// use token::*;
 use scanner::*;
 
-use std::io::{self, BufRead, BufReader, Read, Stdin};
-use std::fs::File;
+use std::io::{self, stdout, BufRead, Write};
 use std::env::args;
 
 fn main() {
@@ -17,7 +16,7 @@ fn main() {
     if args.len() > 2 {
         println!("Usage: jialox [file_path]");
         std::process::exit(64);
-    } else if args.len() == 1 {
+    } else if args.len() == 2 {
         run_file(&args[1]).expect("Could not run file");
     } else {
         run_prompt();
@@ -26,34 +25,32 @@ fn main() {
 
 fn run_file(path: &String) -> io::Result<()>{
     let buf= std::fs::read_to_string(path)?;
-    match run(buf) {
-        Ok(_) => {},
-        Err(err) => {
-            err.report( "".to_string());
-            std::process::exit(65);
-        }
+    print_basic_info();
+    if run(buf).is_err() {
+        // Ignore - error was already reported in run()
+        std::process::exit(65);
     }
     Ok(())
 }
 
 fn run_prompt() {
     let stdin = io::stdin();
-    println!("Jialox 0.1.0 | Authored by Jiashu | Finished in June 4 2024");
-    print!(">>> ");
+    print_basic_info();
+    println!("(Press <Ctrl+z> to exit normally)");
+    start_input_line();
     for line in stdin.lock().lines() {
         if let Ok(line) = line {
             if line.is_empty() {
-                break;
+                start_input_line();
+                continue;
             }
-            match run(line) {
-                Ok(_) => {}
-                Err(err) => {
-                    err.report("".to_string());
-                }   
+            if run(line).is_err() {
+                // Ignore - error was already reported in run()
             }
         } else {
             break;
         }
+        start_input_line();
     }
 }
 
@@ -61,10 +58,16 @@ fn run(source: String) -> Result<(), JialoxError> {
     let mut scanner = Scanner::new(source);
     let tokens = scanner.scan_tokens()?;
     for token in tokens {
-        println!("{}", token);
+        println!("{:?}", token);
     }
     Ok(())
 }
 
+fn start_input_line() {
+    print!(">>> ");
+    stdout().flush().unwrap();
+}
 
-
+fn print_basic_info() {
+    println!("Jialox 0.1.0 | Authored by Jiashu | Finished in June 5 2024");
+}
