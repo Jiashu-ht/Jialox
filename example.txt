@@ -12,3 +12,7 @@ for func if or
 print return 
 super this var
 while
+/* block 
+ * comments /* nesting 2 
+ */
+ ---------- */
