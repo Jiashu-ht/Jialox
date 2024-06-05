@@ -126,6 +126,9 @@ impl Scanner {
                             break;
                         }
                     }
+                } else if self.next_match('*') {
+                    // block
+                    self.scan_block_comments()?;
                 } else {
                     self.add_terminator(TokenType::Slash);
                 }
@@ -264,6 +267,35 @@ impl Scanner {
             }
             _ => {
                 self.add_terminator(ttype);
+            }
+        }
+    }
+
+    fn scan_block_comments(&mut self) -> Result<(), JialoxError>{
+        loop {
+            match self.currentc() {
+                Some('*') => {
+                    self.advance();
+                    if self.next_match('/') {
+                        return Ok(());
+                    }
+                }
+                Some('/') => {
+                    self.advance();
+                    if self.next_match('*') {
+                        self.scan_block_comments()?;
+                    }
+                }
+                Some('\n') => {
+                    self.advance();
+                    self.line += 1;
+                }
+                None => {
+                    return Err(JialoxError::error(self.line, "Unterminated block comments".to_string()));
+                }
+                _ => {
+                    self.advance();
+                }
             }
         }
     }
