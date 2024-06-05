@@ -1,0 +1,14 @@
+// this is a comment
+(( )){} // grouping stuff
+!*+-/=<> <= == // operators
+
+4 238.32        // numbers
+_temp i2a       // identifier
+true false nil  // bool and nil
+
+// keywords
+and class else 
+for func if or
+print return 
+super this var
+while
