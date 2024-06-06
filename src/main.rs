@@ -18,7 +18,7 @@ mod literal;
 mod expr;
 // use expr::*;
 
-mod parse;
+mod parser;
 
 fn main() {
     let args: Vec<String> = args().collect();
