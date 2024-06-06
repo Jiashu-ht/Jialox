@@ -1,5 +1,5 @@
-use std::io::{self, stdout, BufRead, Write};
 use std::env::args;
+use std::io::{self, stdout, BufRead, Write};
 
 mod error;
 use error::*;
@@ -18,6 +18,8 @@ mod literal;
 mod expr;
 // use expr::*;
 
+mod parse;
+
 fn main() {
     let args: Vec<String> = args().collect();
 
@@ -31,8 +33,8 @@ fn main() {
     }
 }
 
-fn run_file(path: &String) -> io::Result<()>{
-    let buf= std::fs::read_to_string(path)?;
+fn run_file(path: &String) -> io::Result<()> {
+    let buf = std::fs::read_to_string(path)?;
     print_basic_info();
     if run(buf).is_err() {
         // Ignore - error was already reported in run()

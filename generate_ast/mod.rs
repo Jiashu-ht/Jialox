@@ -42,12 +42,12 @@ fn define_ast(
     }
 
     for ttype in types {
-        let (base_class_name, args) = ttype.split_once(":").unwrap();
+        let (base_class_name, args) = ttype.split_once(':').unwrap();
         let class_name = format!("{}{}", base_class_name.trim(), base_name);
         let arg_split = args.split(',');
         let mut fields = Vec::new();
         for arg in arg_split {
-            let (t2type, name) = arg.trim().split_once(" ").unwrap();
+            let (t2type, name) = arg.trim().split_once(' ').unwrap();
             fields.push(format!("{}: {}", name, t2type));
         }
         tree_types.push(TreeType {
@@ -79,15 +79,15 @@ fn define_ast(
     writeln!(file, "}}\n\nimpl Eq for {}{{}}\n", base_name)?;
 
     writeln!(file, "impl {} {{", base_name)?;
-    writeln!(file, 
+    writeln!(file,
         "    pub fn accept<T>(&self, wrapper: Rc<{}>, {}_visitor: &dyn {base_name}Visitor<T>) -> Result<T, JialoxError> {{", 
-        base_name, 
+        base_name,
         base_name.to_lowercase()
     )?;
     writeln!(file, "        match self {{")?;
     for t in &tree_types {
         writeln!(
-            file, 
+            file,
             "            {0}::{1}(v) => {3}_visitor.visit_{2}_{3}(wrapper, v),",
             base_name,
             t.base_class_name,

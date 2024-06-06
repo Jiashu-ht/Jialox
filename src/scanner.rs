@@ -219,11 +219,8 @@ impl Scanner {
     }
 
     fn is_digit(ch: Option<char>) -> bool {
-        if let Some(cha) = ch {
-            match cha {
-                '0'..='9' => return true,
-                _ => {},
-            }
+        if let Some('0'..='9') = ch {
+            return true;
         }
         false
     }
