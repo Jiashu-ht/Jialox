@@ -77,5 +77,5 @@ fn start_input_line() {
 }
 
 fn print_basic_info() {
-    println!("Jialox 0.1.0 | Authored by Jiashu | Finished in June 5 2024");
+    println!("Jialox 0.2.0 | Authored by Jiashu | Finished in June 6 2024");
 }
