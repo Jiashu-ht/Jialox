@@ -1,14 +1,23 @@
-mod error;
-mod token_type;
-mod token;
-mod scanner;
-use error::*;
-// use token_type::*;
-// use token::*;
-use scanner::*;
-
 use std::io::{self, stdout, BufRead, Write};
 use std::env::args;
+
+mod error;
+use error::*;
+
+mod token_type;
+mod token;
+
+mod scanner;
+use scanner::*;
+
+mod literal;
+
+mod expr;
+//use expr::*;
+
+// use token_type::*;
+// use token::*;
+
 
 fn main() {
     let args: Vec<String> = args().collect();
