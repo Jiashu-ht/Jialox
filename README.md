@@ -28,3 +28,11 @@ You can start learning from version 0.1.0, gradually improve from a small projec
 This version completes the content of [Section 4 Scanning](http://www.craftinginterpreters.com/scanning.html).
 
 **Added** nested block block comments - Section 4 challege 4
+
+- release/0.2.0
+
+This version completes the content of Section 5 [Representing Code](http://www.craftinginterpreters.com/representing-code.html)
+
+**Added** buid.rs and generate_ast to automatically generate code `./src/expr.rs`, which is not included and ignored in project.
+
+**Discarded** the file 'ast_printer.rs', which will not be used later.
