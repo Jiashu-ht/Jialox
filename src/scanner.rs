@@ -3,6 +3,7 @@ use std::collections::HashMap;
 use crate::token_type::*;
 use crate::token::*;
 use crate::error::*;
+use crate::literal::*;
 
 pub struct Scanner {
     source: Vec<char>,
@@ -197,7 +198,7 @@ impl Scanner {
         self.advance();
         // TODO: handle escape sequences
         let value: String = self.source[self.start + 1..self.current - 1].iter().collect();
-        self.add_token(TokenType::String, Some(Literal::String(value)));
+        self.add_token(TokenType::String, Some(Literal::Str(value)));
         Ok(())
     }
 
@@ -214,7 +215,7 @@ impl Scanner {
         }
         let value: String = self.source[self.start..self.current].iter().collect();
         let num: f64 = value.parse().unwrap();
-        self.add_token(TokenType::Number, Some(Literal::Number(num)));
+        self.add_token(TokenType::Number, Some(Literal::Num(num)));
     }
 
     fn is_digit(ch: Option<char>) -> bool {
