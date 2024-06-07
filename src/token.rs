@@ -61,6 +61,14 @@ impl Token {
     pub fn line(&self) -> usize {
         self.line
     }
+
+    pub fn ttype(&self) -> TokenType {
+        self.ttype
+    }
+
+    pub fn lexeme(&self) -> String {
+        self.lexeme.clone()
+    }
 }
 
 impl fmt::Display for Token {

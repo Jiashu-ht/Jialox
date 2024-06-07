@@ -2,7 +2,6 @@ use std::rc::Rc;
 
 use crate::error::*;
 use crate::expr::*;
-use crate::literal::Literal;
 use crate::token::*;
 use crate::token_type::*;
 
@@ -126,8 +125,35 @@ impl Parser {
         if self.check(ttype) {
             Ok(self.advance().mirror())
         } else {
-            let tok = self.currentt();
-            Err(JialoxError::error(tok.line(), message))
+            Err(Parser::error(self.currentt(), message))
+        }
+    }
+
+    fn error(token: &Token, message: String) -> JialoxError {
+        JialoxError::parse_error(token, message)
+    }
+
+    fn synchronize(&mut self) {
+        self.advance();
+
+        while !self.is_at_end() {
+            if self.previous().is(TokenType::Semicolon) {
+                return;
+            }
+            if matches!(
+                self.currentt().ttype(),
+                TokenType::Class
+                    | TokenType::Func
+                    | TokenType::Var
+                    | TokenType::For
+                    | TokenType::If
+                    | TokenType::While
+                    | TokenType::Print
+                    | TokenType::Return
+            ) {
+                return;
+            }
+            self.advance();
         }
     }
 
@@ -152,7 +178,7 @@ impl Parser {
         if !self.is_at_end() {
             self.current += 1;
         }
-        return self.previous();
+        self.previous()
     }
 
     fn is_at_end(&self) -> bool {
