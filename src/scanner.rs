@@ -1,9 +1,9 @@
 use std::collections::HashMap;
 
-use crate::token_type::*;
-use crate::token::*;
 use crate::error::*;
 use crate::literal::*;
+use crate::token::*;
+use crate::token_type::*;
 
 pub struct Scanner {
     source: Vec<char>,
@@ -52,7 +52,7 @@ impl Scanner {
         while !self.is_at_end() {
             self.start = self.current;
             match self.scan_token() {
-                Ok(_) => {},
+                Ok(_) => {}
                 Err(e) => {
                     e.report("".to_string());
                     had_error = Some(e);
@@ -148,7 +148,10 @@ impl Scanner {
                 self.identifier();
             }
             _ => {
-                return Err(JialoxError::error(self.line, "Unexpected character".to_string()));
+                return Err(JialoxError::error(
+                    self.line,
+                    "Unexpected character".to_string(),
+                ));
             }
         }
         Ok(())
@@ -166,7 +169,8 @@ impl Scanner {
 
     fn add_token(&mut self, ttype: TokenType, literal: Option<Literal>) {
         let lexeme: String = self.source[self.start..self.current].iter().collect();
-        self.tokens.push(Token::new(ttype, lexeme, literal, self.line));
+        self.tokens
+            .push(Token::new(ttype, lexeme, literal, self.line));
     }
 
     fn next_match(&mut self, expected: char) -> bool {
@@ -186,18 +190,23 @@ impl Scanner {
     fn string(&mut self) -> Result<(), JialoxError> {
         while let Some(ch) = self.currentc() {
             match ch {
-                '"'     => break,
-                '\n'    => self.line += 1,
-                _       => {},
+                '"' => break,
+                '\n' => self.line += 1,
+                _ => {}
             }
             self.advance();
         }
         if self.is_at_end() {
-            return Err(JialoxError::error(self.line, "Unterminated string.".to_string()));
+            return Err(JialoxError::error(
+                self.line,
+                "Unterminated string.".to_string(),
+            ));
         }
         self.advance();
         // TODO: handle escape sequences
-        let value: String = self.source[self.start + 1..self.current - 1].iter().collect();
+        let value: String = self.source[self.start + 1..self.current - 1]
+            .iter()
+            .collect();
         self.add_token(TokenType::String, Some(Literal::Str(value)));
         Ok(())
     }
@@ -219,11 +228,8 @@ impl Scanner {
     }
 
     fn is_digit(ch: Option<char>) -> bool {
-        if let Some(cha) = ch {
-            match cha {
-                '0'..='9' => return true,
-                _ => {},
-            }
+        if let Some('0'..='9') = ch {
+            return true;
         }
         false
     }
@@ -272,7 +278,7 @@ impl Scanner {
         }
     }
 
-    fn scan_block_comments(&mut self) -> Result<(), JialoxError>{
+    fn scan_block_comments(&mut self) -> Result<(), JialoxError> {
         loop {
             match self.currentc() {
                 Some('*') => {
@@ -292,7 +298,10 @@ impl Scanner {
                     self.line += 1;
                 }
                 None => {
-                    return Err(JialoxError::error(self.line, "Unterminated block comments".to_string()));
+                    return Err(JialoxError::error(
+                        self.line,
+                        "Unterminated block comments".to_string(),
+                    ));
                 }
                 _ => {
                     self.advance();
@@ -300,4 +309,4 @@ impl Scanner {
             }
         }
     }
-} 
+}

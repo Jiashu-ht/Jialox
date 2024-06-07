@@ -7,17 +7,17 @@ pub enum TokenType {
     RightBrace,
     Comma,
     Dot,
-    Minus, 
-    Plus, 
+    Minus,
+    Plus,
     Semicolon,
     Slash,
     Star,
 
     // One or two character tokens
-    Bang, 
+    Bang,
     BangEqual,
-    Equal,          // Assign '='
-    EqualEqual,     // Equal  '=='
+    Equal,      // Assign '='
+    EqualEqual, // Equal  '=='
     Greater,
     GreaterEqual,
     Less,

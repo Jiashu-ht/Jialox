@@ -31,8 +31,16 @@ This version completes the content of [Section 4 Scanning](http://www.craftingin
 
 - release/0.2.0
 
-This version completes the content of Section 5 [Representing Code](http://www.craftinginterpreters.com/representing-code.html)
+This version completes the content of [Section 5 Representing Code](http://www.craftinginterpreters.com/representing-code.html)
 
 **Added** buid.rs and generate_ast to automatically generate code `./src/expr.rs`, which is not included and ignored in project.
 
 **Discarded** the file 'ast_printer.rs', which will not be used later.
+
+- release/0.3.0
+
+This version completes the content of [Section 6 Parsing Expressions](http://www.craftinginterpreters.com/parsing-expressions.html)
+
+**Added** a parser to parse the token sequence passed by the scanner.
+
+**Added** ast_printer to print the parsed expression. And the file 'ast_printer.rs' will be used for a period of time.

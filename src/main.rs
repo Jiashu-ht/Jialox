@@ -1,5 +1,5 @@
-use std::io::{self, stdout, BufRead, Write};
 use std::env::args;
+use std::io::{self, stdout, BufRead, Write};
 
 mod error;
 use error::*;
@@ -18,6 +18,12 @@ mod literal;
 mod expr;
 // use expr::*;
 
+mod parser;
+use parser::*;
+
+mod ast_printer;
+use ast_printer::*;
+
 fn main() {
     let args: Vec<String> = args().collect();
 
@@ -31,8 +37,8 @@ fn main() {
     }
 }
 
-fn run_file(path: &String) -> io::Result<()>{
-    let buf= std::fs::read_to_string(path)?;
+fn run_file(path: &String) -> io::Result<()> {
+    let buf = std::fs::read_to_string(path)?;
     print_basic_info();
     if run(buf).is_err() {
         // Ignore - error was already reported in run()
@@ -65,8 +71,11 @@ fn run_prompt() {
 fn run(source: String) -> Result<(), JialoxError> {
     let mut scanner = Scanner::new(source);
     let tokens = scanner.scan_tokens()?;
-    for token in tokens {
-        println!("{:?}", token);
+
+    let mut parser = Parser::new(&tokens);
+    if let Some(expr) = parser.parse() {
+        let printer = AstPrinter {};
+        println!("AST Printer:\n{}", printer.print(&expr)?);
     }
     Ok(())
 }
@@ -77,5 +86,5 @@ fn start_input_line() {
 }
 
 fn print_basic_info() {
-    println!("Jialox 0.2.0 | Authored by Jiashu | Finished in June 6 2024");
+    println!("Jialox 0.3.0 | Authored by Jiashu | Finished in June 7 2024");
 }
