@@ -24,6 +24,8 @@ use parser::*;
 mod ast_printer;
 use ast_printer::*;
 
+mod interpreter;
+
 fn main() {
     let args: Vec<String> = args().collect();
 
