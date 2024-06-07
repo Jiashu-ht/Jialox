@@ -58,6 +58,10 @@ impl Token {
         self.literal.clone()
     }
 
+    pub fn as_string(&self) -> String {
+        self.lexeme.clone()
+    }
+
     pub fn line(&self) -> usize {
         self.line
     }

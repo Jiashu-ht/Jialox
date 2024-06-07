@@ -19,6 +19,10 @@ mod expr;
 // use expr::*;
 
 mod parser;
+use parser::*;
+
+mod ast_printer;
+use ast_printer::*;
 
 fn main() {
     let args: Vec<String> = args().collect();
@@ -67,8 +71,11 @@ fn run_prompt() {
 fn run(source: String) -> Result<(), JialoxError> {
     let mut scanner = Scanner::new(source);
     let tokens = scanner.scan_tokens()?;
-    for token in tokens {
-        println!("{:?}", token);
+
+    let mut parser = Parser::new(&tokens);
+    if let Some(expr) = parser.parse() {
+        let printer = AstPrinter {};
+        println!("AST Printer:\n{}", printer.print(&expr)?);
     }
     Ok(())
 }

@@ -80,15 +80,14 @@ fn define_ast(
 
     writeln!(file, "impl {} {{", base_name)?;
     writeln!(file,
-        "    pub fn accept<T>(&self, wrapper: Rc<{}>, {}_visitor: &dyn {base_name}Visitor<T>) -> Result<T, JialoxError> {{", 
-        base_name,
+        "    pub fn accept<T>(&self, {}_visitor: &dyn {base_name}Visitor<T>) -> Result<T, JialoxError> {{", 
         base_name.to_lowercase()
     )?;
     writeln!(file, "        match self {{")?;
     for t in &tree_types {
         writeln!(
             file,
-            "            {0}::{1}(v) => {3}_visitor.visit_{2}_{3}(wrapper, v),",
+            "            {0}::{1}(v) => {3}_visitor.visit_{2}_{3}(v),",
             base_name,
             t.base_class_name,
             t.base_class_name.to_lowercase(),
@@ -111,11 +110,10 @@ fn define_ast(
     for t in &tree_types {
         writeln!(
             file,
-            "    fn visit_{0}_{1}(&self, wrapper: Rc<{3}>, {1}: &{2}) -> Result<T, JialoxError>;",
+            "    fn visit_{0}_{1}(&self, {1}: &{2}) -> Result<T, JialoxError>;",
             t.base_class_name.to_lowercase(),
             base_name.to_lowercase(),
-            t.class_name,
-            base_name
+            t.class_name
         )?;
     }
     writeln!(file, "}}\n")?;
