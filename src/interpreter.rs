@@ -11,21 +11,44 @@ impl ExprVisitor<Literal> for Interpreter {
     fn visit_binary_expr(&self, expr: &BinaryExpr) -> Result<Literal, JialoxError> {
         let left = self.evaluate(expr.left.clone())?;
         let right = self.evaluate(expr.right.clone())?;
+        let op = expr.operator.ttype();
 
-        let result = match expr.operator.ttype() {
-            TokenType::Plus => left + right,
-            TokenType::Minus => left - right,
-            TokenType::Star => left * right,
-            TokenType::Slash => left / right,
-            TokenType::Greater => Literal::Bool(left > right),
-            TokenType::GreaterEqual => Literal::Bool(left >= right),
-            TokenType::Less => Literal::Bool(left < right),
-            TokenType::LessEqual => Literal::Bool(left <= right),
-            TokenType::BangEqual => Literal::Bool(left != right),
-            TokenType::EqualEqual => Literal::Bool(left == right),
-            _ => {
-                todo!("need to work on your code");
+        let result = match (left, right) {
+            (Literal::Num(left), Literal::Num(right)) => match op {
+                TokenType::Plus => Literal::Num(left + right),
+                TokenType::Minus => Literal::Num(left - right),
+                TokenType::Star => Literal::Num(left * right),
+                TokenType::Slash => Literal::Num(left / right),
+                TokenType::Greater => Literal::Bool(left > right),
+                TokenType::GreaterEqual => Literal::Bool(left >= right),
+                TokenType::Less => Literal::Bool(left < right),
+                TokenType::LessEqual => Literal::Bool(left <= right),
+                TokenType::BangEqual => Literal::Bool(left != right),
+                TokenType::EqualEqual => Literal::Bool(left == right),
+                _ => Literal::ArithmeticError,
             }
+            (Literal::Str(left), Literal::Str(right)) => match op {
+                TokenType::Plus => Literal::Str(format!("{left}{right}")),
+                TokenType::EqualEqual => Literal::Bool(left == right),
+                TokenType::BangEqual => Literal::Bool(left != right),
+                _ => Literal::ArithmeticError
+            }
+            (Literal::Bool(left), Literal::Bool(right)) => match op {
+                TokenType::EqualEqual => Literal::Bool(left == right),
+                TokenType::BangEqual => Literal::Bool(left != right),
+                _ => Literal::ArithmeticError
+            }
+            (Literal::Nil, Literal::Nil) => match op {
+                TokenType::EqualEqual => Literal::Bool(true),
+                TokenType::BangEqual => Literal::Bool(false),
+                _ => Literal::ArithmeticError
+            }
+            (Literal::Nil, _) => match op {
+                TokenType::EqualEqual => Literal::Bool(false),
+                TokenType::BangEqual => Literal::Bool(true),
+                _ => Literal::ArithmeticError
+            }
+            _ => Literal::ArithmeticError,
         };
         if result == Literal::ArithmeticError {
             Err(JialoxError::error(
@@ -100,6 +123,22 @@ mod tests {
         Rc::new(Expr::Literal(Rc::new(LiteralExpr {
             value: Some(Literal::Nil),
         })))
+    }
+
+    fn run_comparison_tests(tok: &Token, cmps_result: Vec<bool>) {
+        let nums = vec![7.7, 7.8, 7.9];
+        let terp = Interpreter {};
+
+        for (&num, ret) in nums.iter().zip(cmps_result) {
+            let binary_expr = BinaryExpr {
+                left: new_literal_number(num),
+                operator: tok.mirror(),
+                right: new_literal_number(7.8),
+            };
+            let result = terp.visit_binary_expr(&binary_expr);
+            assert!(result.is_ok());
+            assert_eq!(result.ok(), Some(Literal::Bool(ret)));
+        } 
     }
 
     #[test]
@@ -207,172 +246,46 @@ mod tests {
     }
 
     #[test]
-    fn test_greater_real_greater() {
-        let terp = Interpreter {};
-        let binary_expr = BinaryExpr {
-            left: new_literal_number(7.8),
-            operator: Token::new(TokenType::Greater, ">".to_string(), None, 123),
-            right: new_literal_number(7.7),
-        };
-        let result = terp.visit_binary_expr(&binary_expr);
-        assert!(result.is_ok());
-        assert_eq!(result.ok(), Some(Literal::Bool(true)));
+    fn test_greater() {
+        run_comparison_tests(
+            &Token::new(TokenType::Greater, ">".to_string(), None, 1),
+            vec![false, false, true]
+        );
     }
 
-    #[test]
-    fn test_greater_real_equal() {
-        let terp = Interpreter {};
-        let binary_expr = BinaryExpr {
-            left: new_literal_number(7.8),
-            operator: Token::new(TokenType::Greater, ">".to_string(), None, 123),
-            right: new_literal_number(7.8),
-        };
-        let result = terp.visit_binary_expr(&binary_expr);
-        assert!(result.is_ok());
-        assert_eq!(result.ok(), Some(Literal::Bool(false)));
-    }
 
     #[test]
-    fn test_greater_real_less() {
-        let terp = Interpreter {};
-        let binary_expr = BinaryExpr {
-            left: new_literal_number(7.8),
-            operator: Token::new(TokenType::Greater, ">".to_string(), None, 123),
-            right: new_literal_number(7.9),
-        };
-        let result = terp.visit_binary_expr(&binary_expr);
-        assert!(result.is_ok());
-        assert_eq!(result.ok(), Some(Literal::Bool(false)));
+    fn test_greatereuqal() {
+        run_comparison_tests(
+            &Token::new(TokenType::GreaterEqual, ">=".to_string(), None, 1),
+            vec![false, true, true]
+        );
     }
 
-    #[test]
-    fn test_greatereuqal_real_greater() {
-        let terp = Interpreter {};
-        let binary_expr = BinaryExpr {
-            left: new_literal_number(7.8),
-            operator: Token::new(TokenType::GreaterEqual, ">=".to_string(), None, 123),
-            right: new_literal_number(7.7),
-        };
-        let result = terp.visit_binary_expr(&binary_expr);
-        assert!(result.is_ok());
-        assert_eq!(result.ok(), Some(Literal::Bool(true)));
-    }
 
     #[test]
-    fn test_greatereuqal_real_equal() {
-        let terp = Interpreter {};
-        let binary_expr = BinaryExpr {
-            left: new_literal_number(7.8),
-            operator: Token::new(TokenType::GreaterEqual, ">=".to_string(), None, 123),
-            right: new_literal_number(7.8),
-        };
-        let result = terp.visit_binary_expr(&binary_expr);
-        assert!(result.is_ok());
-        assert_eq!(result.ok(), Some(Literal::Bool(true)));
-    }
-
-    #[test]
-    fn test_greatereuqal_real_less() {
-        let terp = Interpreter {};
-        let binary_expr = BinaryExpr {
-            left: new_literal_number(7.8),
-            operator: Token::new(TokenType::GreaterEqual, ">=".to_string(), None, 123),
-            right: new_literal_number(7.9),
-        };
-        let result = terp.visit_binary_expr(&binary_expr);
-        assert!(result.is_ok());
-        assert_eq!(result.ok(), Some(Literal::Bool(false)));
-    }
-
-    #[test]
-    fn test_less_real_greater() {
-        let terp = Interpreter {};
-        let binary_expr = BinaryExpr {
-            left: new_literal_number(7.8),
-            operator: Token::new(TokenType::Less, "<".to_string(), None, 123),
-            right: new_literal_number(7.7),
-        };
-        let result = terp.visit_binary_expr(&binary_expr);
-        assert!(result.is_ok());
-        assert_eq!(result.ok(), Some(Literal::Bool(false)));
-    }
-
-    #[test]
-    fn test_less_real_equal() {
-        let terp = Interpreter {};
-        let binary_expr = BinaryExpr {
-            left: new_literal_number(7.8),
-            operator: Token::new(TokenType::Less, "<".to_string(), None, 123),
-            right: new_literal_number(7.8),
-        };
-        let result = terp.visit_binary_expr(&binary_expr);
-        assert!(result.is_ok());
-        assert_eq!(result.ok(), Some(Literal::Bool(false)));
-    }
-
-    #[test]
-    fn test_less_real_less() {
-        let terp = Interpreter {};
-        let binary_expr = BinaryExpr {
-            left: new_literal_number(7.8),
-            operator: Token::new(TokenType::Less, "<".to_string(), None, 123),
-            right: new_literal_number(7.9),
-        };
-        let result = terp.visit_binary_expr(&binary_expr);
-        assert!(result.is_ok());
-        assert_eq!(result.ok(), Some(Literal::Bool(true)));
+    fn test_less() {
+        run_comparison_tests(
+            &Token::new(TokenType::Less, "<".to_string(), None, 1),
+            vec![true, false, false]
+        );
     }
 
     #[test]
     fn test_lesseuqal_real_greater() {
-        let terp = Interpreter {};
-        let binary_expr = BinaryExpr {
-            left: new_literal_number(7.8),
-            operator: Token::new(TokenType::LessEqual, "<=".to_string(), None, 123),
-            right: new_literal_number(7.7),
-        };
-        let result = terp.visit_binary_expr(&binary_expr);
-        assert!(result.is_ok());
-        assert_eq!(result.ok(), Some(Literal::Bool(false)));
+        run_comparison_tests(
+            &Token::new(TokenType::LessEqual, "<=".to_string(), None, 1),
+            vec![true, true, false]
+        );
     }
 
-    #[test]
-    fn test_lesseuqal_real_equal() {
-        let terp = Interpreter {};
-        let binary_expr = BinaryExpr {
-            left: new_literal_number(7.8),
-            operator: Token::new(TokenType::LessEqual, "<=".to_string(), None, 123),
-            right: new_literal_number(7.8),
-        };
-        let result = terp.visit_binary_expr(&binary_expr);
-        assert!(result.is_ok());
-        assert_eq!(result.ok(), Some(Literal::Bool(true)));
-    }
-
-    #[test]
-    fn test_lesseuqal_real_less() {
-        let terp = Interpreter {};
-        let binary_expr = BinaryExpr {
-            left: new_literal_number(7.8),
-            operator: Token::new(TokenType::LessEqual, "<=".to_string(), None, 123),
-            right: new_literal_number(7.9),
-        };
-        let result = terp.visit_binary_expr(&binary_expr);
-        assert!(result.is_ok());
-        assert_eq!(result.ok(), Some(Literal::Bool(true)));
-    }
 
     #[test]
     fn test_equaleuqal_number() {
-        let terp = Interpreter {};
-        let binary_expr = BinaryExpr {
-            left: new_literal_number(7.8),
-            operator: Token::new(TokenType::EqualEqual, "==".to_string(), None, 123),
-            right: new_literal_number(7.8),
-        };
-        let result = terp.visit_binary_expr(&binary_expr);
-        assert!(result.is_ok());
-        assert_eq!(result.ok(), Some(Literal::Bool(true)));
+        run_comparison_tests(
+            &Token::new(TokenType::EqualEqual, "==".to_string(), None, 1),
+            vec![false, true, false]
+        );
     }
 
     #[test]
@@ -416,15 +329,10 @@ mod tests {
 
     #[test]
     fn test_bangeuqal_number() {
-        let terp = Interpreter {};
-        let binary_expr = BinaryExpr {
-            left: new_literal_number(7.8),
-            operator: Token::new(TokenType::BangEqual, "!=".to_string(), None, 123),
-            right: new_literal_number(3.0),
-        };
-        let result = terp.visit_binary_expr(&binary_expr);
-        assert!(result.is_ok());
-        assert_eq!(result.ok(), Some(Literal::Bool(true)));
+        run_comparison_tests(
+            &Token::new(TokenType::BangEqual, "!=".to_string(), None, 1),
+            vec![true, false, true]
+        );
     }
 
     #[test]
