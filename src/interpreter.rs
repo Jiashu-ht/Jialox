@@ -86,6 +86,10 @@ impl ExprVisitor<Literal> for Interpreter {
 }
 
 impl Interpreter {
+    pub fn new() -> Interpreter {
+        Interpreter { }
+    }
+
     fn evaluate(&self, expr: Rc<Expr>) -> Result<Literal, JialoxError> {
         expr.accept(self)
     }
@@ -93,6 +97,13 @@ impl Interpreter {
     /// false and nil are falsey, and everything else is truthy.
     fn is_truthy(&self, literal: &Literal) -> bool {
         !matches!(literal, Literal::Bool(false) | Literal::Nil)
+    }
+
+    pub fn interpret(&self, expr: Rc<Expr>) -> bool {
+        match self.evaluate(expr) {
+            Ok(val) => { println!("{val}"); false }
+            Err(e) => { e.report(""); true }
+        }
     }
 }
 
