@@ -3,17 +3,6 @@ use std::fmt;
 use crate::literal::*;
 use crate::token_type::*;
 
-impl fmt::Display for Literal {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            Literal::Num(x) => write!(f, "{x}"),
-            Literal::Str(x) => write!(f, "{x}"),
-            Literal::Bool(x) => write!(f, "{x}"),
-            Literal::Nil => write!(f, "nil"),
-        }
-    }
-}
-
 #[derive(Debug)]
 pub struct Token {
     ttype: TokenType,
@@ -58,9 +47,9 @@ impl Token {
         self.literal.clone()
     }
 
-    pub fn as_string(&self) -> String {
-        self.lexeme.clone()
-    }
+    // pub fn as_string(&self) -> String {
+    //     self.lexeme.clone()
+    // }
 
     pub fn line(&self) -> usize {
         self.line
