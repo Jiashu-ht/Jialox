@@ -148,10 +148,7 @@ impl Scanner {
                 self.identifier();
             }
             _ => {
-                return Err(JialoxError::error(
-                    self.line,
-                    "Unexpected character",
-                ));
+                return Err(JialoxError::error(self.line, "Unexpected character"));
             }
         }
         Ok(())
@@ -197,10 +194,7 @@ impl Scanner {
             self.advance();
         }
         if self.is_at_end() {
-            return Err(JialoxError::error(
-                self.line,
-                "Unterminated string.",
-            ));
+            return Err(JialoxError::error(self.line, "Unterminated string."));
         }
         self.advance();
         // TODO: handle escape sequences
@@ -298,10 +292,7 @@ impl Scanner {
                     self.line += 1;
                 }
                 None => {
-                    return Err(JialoxError::error(
-                        self.line,
-                        "Unterminated block comments",
-                    ));
+                    return Err(JialoxError::error(self.line, "Unterminated block comments"));
                 }
                 _ => {
                     self.advance();

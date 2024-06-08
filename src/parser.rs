@@ -11,7 +11,7 @@ pub struct Parser<'a> {
 }
 
 impl<'a> Parser<'a> {
-    pub fn new(tokens: & Vec<Token>) -> Parser {
+    pub fn new(tokens: &Vec<Token>) -> Parser {
         Parser { tokens, current: 0 }
     }
 
@@ -117,10 +117,7 @@ impl<'a> Parser<'a> {
         }
         if self.is_match(&[TokenType::LeftParen]) {
             let expr = self.expression()?;
-            self.consume(
-                TokenType::RightParen,
-                "Expected ')' after expression.",
-            )?;
+            self.consume(TokenType::RightParen, "Expected ')' after expression.")?;
             return Ok(Expr::Grouping(Rc::new(GroupingExpr {
                 expression: Rc::new(expr),
             })));
