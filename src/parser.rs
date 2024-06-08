@@ -119,16 +119,16 @@ impl<'a> Parser<'a> {
             let expr = self.expression()?;
             self.consume(
                 TokenType::RightParen,
-                "Expected ')' after expression.".to_string(),
+                "Expected ')' after expression.",
             )?;
             return Ok(Expr::Grouping(Rc::new(GroupingExpr {
                 expression: Rc::new(expr),
             })));
         }
-        Err(JialoxError::error(0, "Expected expression".to_string()))
+        Err(JialoxError::error(0, "Expected expression"))
     }
 
-    fn consume(&mut self, ttype: TokenType, message: String) -> Result<Token, JialoxError> {
+    fn consume(&mut self, ttype: TokenType, message: &str) -> Result<Token, JialoxError> {
         if self.check(ttype) {
             Ok(self.advance().mirror())
         } else {
@@ -136,7 +136,7 @@ impl<'a> Parser<'a> {
         }
     }
 
-    fn error(token: &Token, message: String) -> JialoxError {
+    fn error(token: &Token, message: &str) -> JialoxError {
         JialoxError::parse_error(token, message)
     }
 

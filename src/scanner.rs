@@ -54,7 +54,7 @@ impl Scanner {
             match self.scan_token() {
                 Ok(_) => {}
                 Err(e) => {
-                    e.report("".to_string());
+                    e.report("");
                     had_error = Some(e);
                 }
             }
@@ -150,7 +150,7 @@ impl Scanner {
             _ => {
                 return Err(JialoxError::error(
                     self.line,
-                    "Unexpected character".to_string(),
+                    "Unexpected character",
                 ));
             }
         }
@@ -199,7 +199,7 @@ impl Scanner {
         if self.is_at_end() {
             return Err(JialoxError::error(
                 self.line,
-                "Unterminated string.".to_string(),
+                "Unterminated string.",
             ));
         }
         self.advance();
@@ -300,7 +300,7 @@ impl Scanner {
                 None => {
                     return Err(JialoxError::error(
                         self.line,
-                        "Unterminated block comments".to_string(),
+                        "Unterminated block comments",
                     ));
                 }
                 _ => {

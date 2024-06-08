@@ -38,7 +38,7 @@ impl ExprVisitor<Literal> for Interpreter {
             }
             _ => Err(JialoxError::error(
                 0, 
-                "Unreachable in struct Interpreter's method visit_unary_expr()".to_string()
+                "Unreachable in struct Interpreter's method visit_unary_expr()"
             ))
         } 
     }
