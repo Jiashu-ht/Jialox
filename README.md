@@ -45,7 +45,7 @@ This version completes the content of [Section 6 Parsing Expressions](http://www
 
 **Added** ast_printer to print the parsed expression. And the file 'ast_printer.rs' will be used for a period of time.
 
-- release/0.3.0
+- release/0.4.0
 
 This version completes the content of [Section 7 Evaluating Expressions](http://www.craftinginterpreters.com/evaluating-expressions.html)
 

@@ -85,8 +85,8 @@ impl ExprVisitor<Literal> for Interpreter {
 
         match expr.operator.ttype() {
             TokenType::Minus => match right {
-                Literal::Num(val) => return Ok(Literal::Num(-val)),
-                _ => return Ok(Literal::Nil),
+                Literal::Num(val) => Ok(Literal::Num(-val)),
+                _ => Ok(Literal::Nil),
             },
             TokenType::Bang => Ok(Literal::Bool(!self.is_truthy(&right))),
             _ => Err(JialoxError::error(

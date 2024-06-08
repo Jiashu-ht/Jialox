@@ -91,7 +91,7 @@ impl Jialox {
         let mut scanner = Scanner::new(source);
         let tokens = scanner.scan_tokens()?;
     
-        let mut parser = Parser::new(&tokens);
+        let mut parser = Parser::new(tokens);
         if let Some(expr) = parser.parse() {
             self.interpreter.interpret(Rc::new(expr));
         }
