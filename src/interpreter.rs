@@ -33,6 +33,18 @@ impl ExprVisitor<Literal> for Interpreter {
                 TokenType::BangEqual => Literal::Bool(left != right),
                 _ => Literal::ArithmeticError
             }
+            (Literal::Num(left), Literal::Str(right)) => match op {
+                TokenType::Plus => Literal::Str(format!("{left}{right}")),
+                TokenType::EqualEqual => Literal::Bool(false),
+                TokenType::BangEqual => Literal::Bool(true),
+                _ => Literal::ArithmeticError
+            }
+            (Literal::Str(left), Literal::Num(right)) => match op {
+                TokenType::Plus => Literal::Str(format!("{left}{right}")),
+                TokenType::EqualEqual => Literal::Bool(false),
+                TokenType::BangEqual => Literal::Bool(true),
+                _ => Literal::ArithmeticError
+            }
             (Literal::Bool(left), Literal::Bool(right)) => match op {
                 TokenType::EqualEqual => Literal::Bool(left == right),
                 TokenType::BangEqual => Literal::Bool(left != right),
