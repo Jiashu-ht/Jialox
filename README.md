@@ -44,3 +44,9 @@ This version completes the content of [Section 6 Parsing Expressions](http://www
 **Added** a parser to parse the token sequence passed by the scanner.
 
 **Added** ast_printer to print the parsed expression. And the file 'ast_printer.rs' will be used for a period of time.
+
+- release/0.3.0
+
+This version completes the content of [Section 7 Evaluating Expressions](http://www.craftinginterpreters.com/evaluating-expressions.html)
+
+**Added** a interpreter to evalutate expressions.

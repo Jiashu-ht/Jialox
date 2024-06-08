@@ -49,9 +49,9 @@ struct Jialox {
 impl Jialox {
     fn new() -> Jialox {
         Jialox {
-            version: "0.3.0".to_string(),
+            version: "0.4.0".to_string(),
             authored: "Jiashu".to_string(),
-            finished_time: "June 7 2024".to_string(),
+            finished_time: "June 8 2024".to_string(),
             interpreter: Interpreter::new(),
         }
     }
