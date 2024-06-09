@@ -38,9 +38,9 @@ impl<'a> Parser<'a> {
 
     fn statement(&mut self) -> Result<Stmt, JialoxError> {
         if self.is_match(&[TokenType::Print]) {
-            return Ok(self.print_statement()?);
+            return self.print_statement();
         }
-        Ok(self.expression_statement()?)
+        self.expression_statement()
     }
 
     fn print_statement(&mut self) -> Result<Stmt, JialoxError> {

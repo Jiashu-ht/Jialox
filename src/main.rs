@@ -26,17 +26,22 @@ use parser::*;
 mod interpreter;
 use interpreter::*;
 
+
 fn main() {
     let args: Vec<String> = args().collect();
     let jialox = Jialox::new();
 
-    if args.len() > 2 {
-        println!("Usage: jialox [file_path]");
-        std::process::exit(64);
-    } else if args.len() == 2 {
-        jialox.run_file(&args[1]).expect("Could not run file");
-    } else {
-        jialox.run_prompt();
+    match args.len() {
+        3.. => {
+            println!("Usage: jialox [file_path]");
+            std::process::exit(64);
+        }
+        2 => {
+            jialox.run_file(&args[1]).expect("Could not run file");
+        }
+        _ => {
+            jialox.run_prompt();
+        }
     }
 }
 
