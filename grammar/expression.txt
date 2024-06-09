@@ -10,9 +10,15 @@ primary        → NUMBER | STRING | "true" | "false" | "nil"
 
 Chapter 8
 program        → statement* EOF ;
-
-statement      → exprStmt
-               | printStmt ;
-
+statement      → exprStmt | printStmt ;
 exprStmt       → expression ";" ;
 printStmt      → "print" expression ";" ;
+
+Chapter 8 - section 8.2
+program        → declaration* EOF ;
+declaration    → varDecl | statement ;
+statement      → exprStmt | printStmt ;
+varDecl        → "var" IDENTIFIER ( "=" expression )? ";" ;
+
+primary        → NUMBER | STRING | "true" | "false" | "nil" | IDENTIFIER
+               | "(" expression ")";

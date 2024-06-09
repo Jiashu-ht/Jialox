@@ -18,6 +18,7 @@ pub fn generate_ast(output_dir: &str) -> io::Result<()> {
             "Grouping : Rc<Expr> expression",
             "Literal  : Option<Literal> value",
             "Unary    : Token operator, Rc<Expr> right",
+            "Variable : Token name",
         ],
     )?;
 
@@ -28,6 +29,7 @@ pub fn generate_ast(output_dir: &str) -> io::Result<()> {
         &[
             "Expression : Rc<Expr> expression",
             "Print      : Rc<Expr> expression",
+            "Var        : Token name, Option<Rc<Expr>> initializer",
         ],
     )?;
     Ok(())

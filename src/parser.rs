@@ -19,16 +19,28 @@ impl<'a> Parser<'a> {
     pub fn parse(&mut self) -> Result<Vec<Rc<Stmt>>, JialoxError> {
         let mut statements = Vec::new();
         while !self.is_at_end() {
-            statements.push(self.statement()?)
+            statements.push(Rc::new(self.declaration()?))
         }
         Ok(statements)
     }
 
-    fn statement(&mut self) -> Result<Rc<Stmt>, JialoxError> {
-        if self.is_match(&[TokenType::Print]) {
-            return Ok(Rc::new(self.print_statement()?));
+    fn declaration(&mut self) -> Result<Stmt, JialoxError> {
+        let result = if self.is_match(&[TokenType::Var]) {
+            self.var_declaration()
+        } else {
+            self.statement()
+        };
+        if result.is_err() {
+            self.synchronize();
         }
-        Ok(Rc::new(self.expression_statement()?))
+        result
+    }
+
+    fn statement(&mut self) -> Result<Stmt, JialoxError> {
+        if self.is_match(&[TokenType::Print]) {
+            return Ok(self.print_statement()?);
+        }
+        Ok(self.expression_statement()?)
     }
 
     fn print_statement(&mut self) -> Result<Stmt, JialoxError> {
@@ -45,6 +57,17 @@ impl<'a> Parser<'a> {
         Ok(Stmt::Expression(Rc::new(ExpressionStmt {
             expression: Rc::new(value),
         })))
+    }
+
+    fn var_declaration(&mut self) -> Result<Stmt, JialoxError> {
+        let name = self.consume(TokenType::Identifier, "Expected variable name.")?;
+        let initializer = if self.is_match(&[TokenType::Equal]) {
+            Some(Rc::new(self.expression()?))
+        } else {
+            None
+        };
+        self.consume(TokenType::Semicolon, "Expected ';' after variable declaration.")?;
+        Ok(Stmt::Var(Rc::new(VarStmt { name, initializer })))
     }
 
     fn expression(&mut self) -> Result<Expr, JialoxError> {
@@ -138,6 +161,11 @@ impl<'a> Parser<'a> {
         ]) {
             return Ok(Expr::Literal(Rc::new(LiteralExpr {
                 value: self.previous().literal(),
+            })));
+        }
+        if self.is_match(&[TokenType::Identifier]) {
+            return Ok(Expr::Variable(Rc::new(VariableExpr { 
+                name: self.previous().mirror() 
             })));
         }
         if self.is_match(&[TokenType::LeftParen]) {

@@ -96,6 +96,10 @@ impl ExprVisitor<Literal> for Interpreter {
             )),
         }
     }
+
+    fn visit_variable_expr(&self, _expr: &VariableExpr) -> Result<Literal, JialoxError> {
+        Ok(Literal::Nil)
+    }
 }
 
 impl StmtVisitor<()> for Interpreter {
@@ -107,6 +111,10 @@ impl StmtVisitor<()> for Interpreter {
     fn visit_print_stmt(&self, stmt: &PrintStmt) -> Result<(), JialoxError> {
         let value = self.evaluate(stmt.expression.clone())?;
         println!("{value}");
+        Ok(())
+    }
+
+    fn visit_var_stmt(&self, _stmt: &VarStmt) -> Result<(), JialoxError> {
         Ok(())
     }
 }
