@@ -33,9 +33,17 @@ impl JialoxError {
         if let Some(token) = &self.token {
             if token.is(TokenType::Eof) {
                 eprintln!("{} at end {}", token.line(), self.message);
-            } else {
-                eprintln!("{} at '{}' {}", token.line(), token.lexeme(), self.message);
             }
         }
+    }
+
+    pub fn runtime_error(token: &Token, message: &str) -> JialoxError {
+        let err = JialoxError {
+            token: Some(token.mirror()),
+            line: token.line(),
+            message: message.to_string(),
+        };
+        err.report("");
+        err
     }
 }

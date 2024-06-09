@@ -1,12 +1,16 @@
+use std::cell::RefCell;
 use std::rc::Rc;
 
 use crate::error::*;
 use crate::expr::*;
-use crate::stmt::*;
 use crate::literal::*;
+use crate::stmt::*;
 use crate::token_type::*;
+use crate::environment::*;
 
-pub struct Interpreter {}
+pub struct Interpreter {
+    environment: RefCell<Environment>,
+}
 
 impl ExprVisitor<Literal> for Interpreter {
     fn visit_binary_expr(&self, expr: &BinaryExpr) -> Result<Literal, JialoxError> {
@@ -27,40 +31,40 @@ impl ExprVisitor<Literal> for Interpreter {
                 TokenType::BangEqual => Literal::Bool(left != right),
                 TokenType::EqualEqual => Literal::Bool(left == right),
                 _ => Literal::ArithmeticError,
-            }
+            },
             (Literal::Str(left), Literal::Str(right)) => match op {
                 TokenType::Plus => Literal::Str(format!("{left}{right}")),
                 TokenType::EqualEqual => Literal::Bool(left == right),
                 TokenType::BangEqual => Literal::Bool(left != right),
-                _ => Literal::ArithmeticError
-            }
+                _ => Literal::ArithmeticError,
+            },
             (Literal::Num(left), Literal::Str(right)) => match op {
                 TokenType::Plus => Literal::Str(format!("{left}{right}")),
                 TokenType::EqualEqual => Literal::Bool(false),
                 TokenType::BangEqual => Literal::Bool(true),
-                _ => Literal::ArithmeticError
-            }
+                _ => Literal::ArithmeticError,
+            },
             (Literal::Str(left), Literal::Num(right)) => match op {
                 TokenType::Plus => Literal::Str(format!("{left}{right}")),
                 TokenType::EqualEqual => Literal::Bool(false),
                 TokenType::BangEqual => Literal::Bool(true),
-                _ => Literal::ArithmeticError
-            }
+                _ => Literal::ArithmeticError,
+            },
             (Literal::Bool(left), Literal::Bool(right)) => match op {
                 TokenType::EqualEqual => Literal::Bool(left == right),
                 TokenType::BangEqual => Literal::Bool(left != right),
-                _ => Literal::ArithmeticError
-            }
+                _ => Literal::ArithmeticError,
+            },
             (Literal::Nil, Literal::Nil) => match op {
                 TokenType::EqualEqual => Literal::Bool(true),
                 TokenType::BangEqual => Literal::Bool(false),
-                _ => Literal::ArithmeticError
-            }
+                _ => Literal::ArithmeticError,
+            },
             (Literal::Nil, _) => match op {
                 TokenType::EqualEqual => Literal::Bool(false),
                 TokenType::BangEqual => Literal::Bool(true),
-                _ => Literal::ArithmeticError
-            }
+                _ => Literal::ArithmeticError,
+            },
             _ => Literal::ArithmeticError,
         };
         if result == Literal::ArithmeticError {
@@ -97,8 +101,8 @@ impl ExprVisitor<Literal> for Interpreter {
         }
     }
 
-    fn visit_variable_expr(&self, _expr: &VariableExpr) -> Result<Literal, JialoxError> {
-        Ok(Literal::Nil)
+    fn visit_variable_expr(&self, expr: &VariableExpr) -> Result<Literal, JialoxError> {
+        self.environment.borrow().get(&expr.name)
     }
 }
 
@@ -114,14 +118,23 @@ impl StmtVisitor<()> for Interpreter {
         Ok(())
     }
 
-    fn visit_var_stmt(&self, _stmt: &VarStmt) -> Result<(), JialoxError> {
+    fn visit_var_stmt(&self, stmt: &VarStmt) -> Result<(), JialoxError> {
+        let value = if let Some(initializer) = stmt.initializer.clone() {
+            self.evaluate(initializer)?
+        } else {
+            Literal::Nil
+        };
+
+        self.environment.borrow_mut().define(&stmt.name.lexeme(), value);
         Ok(())
     }
 }
 
 impl Interpreter {
     pub fn new() -> Interpreter {
-        Interpreter { }
+        Interpreter {
+            environment: RefCell::new(Environment::new()),
+        }
     }
 
     fn evaluate(&self, expr: Rc<Expr>) -> Result<Literal, JialoxError> {
@@ -176,7 +189,7 @@ mod tests {
 
     fn run_comparison_tests(tok: &Token, cmps_result: Vec<bool>) {
         let nums = vec![7.7, 7.8, 7.9];
-        let terp = Interpreter {};
+        let terp = Interpreter::new();
 
         for (&num, ret) in nums.iter().zip(cmps_result) {
             let binary_expr = BinaryExpr {
@@ -187,12 +200,12 @@ mod tests {
             let result = terp.visit_binary_expr(&binary_expr);
             assert!(result.is_ok());
             assert_eq!(result.ok(), Some(Literal::Bool(ret)));
-        } 
+        }
     }
 
     #[test]
     fn test_unary_minus() {
-        let terp = Interpreter {};
+        let terp = Interpreter::new();
         let unary_expr = UnaryExpr {
             operator: Token::new(TokenType::Minus, "-".to_string(), None, 123),
             right: new_literal_number(57.8),
@@ -204,7 +217,7 @@ mod tests {
 
     #[test]
     fn test_unary_bang() {
-        let terp = Interpreter {};
+        let terp = Interpreter::new();
         let unary_expr = UnaryExpr {
             operator: Token::new(TokenType::Bang, "!".to_string(), None, 123),
             right: new_literal_boolean(false),
@@ -216,7 +229,7 @@ mod tests {
 
     #[test]
     fn test_addition() {
-        let terp = Interpreter {};
+        let terp = Interpreter::new();
         let binary_expr = BinaryExpr {
             left: new_literal_number(7.8),
             operator: Token::new(TokenType::Plus, "+".to_string(), None, 123),
@@ -229,7 +242,7 @@ mod tests {
 
     #[test]
     fn test_string_concatination() {
-        let terp = Interpreter {};
+        let terp = Interpreter::new();
         let binary_expr = BinaryExpr {
             left: new_literal_str("hello"),
             operator: Token::new(TokenType::Plus, "+".to_string(), None, 123),
@@ -245,7 +258,7 @@ mod tests {
 
     #[test]
     fn test_substraction() {
-        let terp = Interpreter {};
+        let terp = Interpreter::new();
         let binary_expr = BinaryExpr {
             left: new_literal_number(7.8),
             operator: Token::new(TokenType::Minus, "-".to_string(), None, 123),
@@ -258,7 +271,7 @@ mod tests {
 
     #[test]
     fn test_multiplication() {
-        let terp = Interpreter {};
+        let terp = Interpreter::new();
         let binary_expr = BinaryExpr {
             left: new_literal_number(7.8),
             operator: Token::new(TokenType::Star, "*".to_string(), None, 123),
@@ -271,7 +284,7 @@ mod tests {
 
     #[test]
     fn test_division() {
-        let terp = Interpreter {};
+        let terp = Interpreter::new();
         let binary_expr = BinaryExpr {
             left: new_literal_number(7.8),
             operator: Token::new(TokenType::Slash, "/".to_string(), None, 123),
@@ -284,7 +297,7 @@ mod tests {
 
     #[test]
     fn test_arithmetic_error_for_substraction() {
-        let terp = Interpreter {};
+        let terp = Interpreter::new();
         let binary_expr = BinaryExpr {
             left: new_literal_number(7.8),
             operator: Token::new(TokenType::Minus, "-".to_string(), None, 123),
@@ -298,25 +311,23 @@ mod tests {
     fn test_greater() {
         run_comparison_tests(
             &Token::new(TokenType::Greater, ">".to_string(), None, 1),
-            vec![false, false, true]
+            vec![false, false, true],
         );
     }
-
 
     #[test]
     fn test_greatereuqal() {
         run_comparison_tests(
             &Token::new(TokenType::GreaterEqual, ">=".to_string(), None, 1),
-            vec![false, true, true]
+            vec![false, true, true],
         );
     }
-
 
     #[test]
     fn test_less() {
         run_comparison_tests(
             &Token::new(TokenType::Less, "<".to_string(), None, 1),
-            vec![true, false, false]
+            vec![true, false, false],
         );
     }
 
@@ -324,22 +335,21 @@ mod tests {
     fn test_lesseuqal_real_greater() {
         run_comparison_tests(
             &Token::new(TokenType::LessEqual, "<=".to_string(), None, 1),
-            vec![true, true, false]
+            vec![true, true, false],
         );
     }
-
 
     #[test]
     fn test_equaleuqal_number() {
         run_comparison_tests(
             &Token::new(TokenType::EqualEqual, "==".to_string(), None, 1),
-            vec![false, true, false]
+            vec![false, true, false],
         );
     }
 
     #[test]
     fn test_equaleuqal_string() {
-        let terp = Interpreter {};
+        let terp = Interpreter::new();
         let binary_expr = BinaryExpr {
             left: new_literal_str("hello"),
             operator: Token::new(TokenType::EqualEqual, "==".to_string(), None, 123),
@@ -352,7 +362,7 @@ mod tests {
 
     #[test]
     fn test_equaleuqal_bool() {
-        let terp = Interpreter {};
+        let terp = Interpreter::new();
         let binary_expr = BinaryExpr {
             left: new_literal_boolean(true),
             operator: Token::new(TokenType::EqualEqual, "==".to_string(), None, 123),
@@ -365,7 +375,7 @@ mod tests {
 
     #[test]
     fn test_equaleuqal_nil() {
-        let terp = Interpreter {};
+        let terp = Interpreter::new();
         let binary_expr = BinaryExpr {
             left: new_literal_nir(),
             operator: Token::new(TokenType::EqualEqual, "==".to_string(), None, 123),
@@ -380,13 +390,13 @@ mod tests {
     fn test_bangeuqal_number() {
         run_comparison_tests(
             &Token::new(TokenType::BangEqual, "!=".to_string(), None, 1),
-            vec![true, false, true]
+            vec![true, false, true],
         );
     }
 
     #[test]
     fn test_bangeuqal_string() {
-        let terp = Interpreter {};
+        let terp = Interpreter::new();
         let binary_expr = BinaryExpr {
             left: new_literal_str("hello"),
             operator: Token::new(TokenType::BangEqual, "!=".to_string(), None, 123),
@@ -399,7 +409,7 @@ mod tests {
 
     #[test]
     fn test_bangeuqal_bool() {
-        let terp = Interpreter {};
+        let terp = Interpreter::new();
         let binary_expr = BinaryExpr {
             left: new_literal_boolean(true),
             operator: Token::new(TokenType::BangEqual, "!=".to_string(), None, 123),
@@ -412,7 +422,7 @@ mod tests {
 
     #[test]
     fn test_bangeuqal_nil() {
-        let terp = Interpreter {};
+        let terp = Interpreter::new();
         let binary_expr = BinaryExpr {
             left: new_literal_nir(),
             operator: Token::new(TokenType::BangEqual, "!=".to_string(), None, 123),
@@ -425,7 +435,7 @@ mod tests {
 
     #[test]
     fn test_bangeuqal_random() {
-        let terp = Interpreter {};
+        let terp = Interpreter::new();
         let binary_expr = BinaryExpr {
             left: new_literal_nir(),
             operator: Token::new(TokenType::BangEqual, "!=".to_string(), None, 123),
@@ -434,5 +444,51 @@ mod tests {
         let result = terp.visit_binary_expr(&binary_expr);
         assert!(result.is_ok());
         assert_eq!(result.ok(), Some(Literal::Bool(true)));
+    }
+
+    #[test]
+    fn test_var_stmt_defined() {
+        let terp = Interpreter::new();
+        let var = Token::new(TokenType::Identifier, "foo".to_string(), None, 1);
+        let var_stmt = VarStmt {
+            name: var.mirror(),
+            initializer: Some(new_literal_number(12.5)),
+        };
+        assert!(terp.visit_var_stmt(&var_stmt).is_ok());
+        assert_eq!(terp.environment.borrow().get(&var).unwrap(), Literal::Num(12.5));
+    }
+
+    #[test]
+    fn test_var_stmt_undefined() {
+        let terp = Interpreter::new();
+        let var = Token::new(TokenType::Identifier, "foo".to_string(), None, 1);
+        let var_stmt = VarStmt {
+            name: var.mirror(),
+            initializer: None,
+        };
+        assert!(terp.visit_var_stmt(&var_stmt).is_ok());
+        assert_eq!(terp.environment.borrow().get(&var).unwrap(), Literal::Nil);
+    }
+
+    #[test]
+    fn test_use_variable_after_defined() {
+        let terp = Interpreter::new();
+        let var = Token::new(TokenType::Identifier, "foo".to_string(), None, 1);
+        let var_stmt = VarStmt {
+            name: var.mirror(),
+            initializer: Some(new_literal_number(2.5)),
+        };
+        assert!(terp.visit_var_stmt(&var_stmt).is_ok());
+
+        let var_expr = VariableExpr { name: var.mirror() };
+        assert_eq!(terp.visit_variable_expr(&var_expr).unwrap(), Literal::Num(2.5));
+    }
+
+    #[test]
+    fn test_use_variable_but_undefined() {
+        let terp = Interpreter::new();
+        let var = Token::new(TokenType::Identifier, "foo".to_string(), None, 1);
+        let var_expr = VariableExpr { name: var };
+        assert!(terp.visit_variable_expr(&var_expr).is_err());
     }
 }

@@ -26,6 +26,7 @@ use parser::*;
 mod interpreter;
 use interpreter::*;
 
+mod environment;
 
 fn main() {
     let args: Vec<String> = args().collect();
@@ -49,7 +50,7 @@ struct Jialox {
     version: String,
     authored: String,
     finished_time: String,
-    interpreter: Interpreter
+    interpreter: Interpreter,
 }
 
 impl Jialox {
@@ -71,7 +72,7 @@ impl Jialox {
         }
         Ok(())
     }
-    
+
     fn run_prompt(&self) {
         let stdin = io::stdin();
         self.print_basic_info();
@@ -92,7 +93,7 @@ impl Jialox {
             self.start_input_line();
         }
     }
-    
+
     fn run(&self, source: String) -> Result<(), JialoxError> {
         let mut scanner = Scanner::new(source);
         let tokens = scanner.scan_tokens()?;
@@ -104,19 +105,16 @@ impl Jialox {
         }
         Ok(())
     }
-    
+
     fn start_input_line(&self) {
         print!(">>> ");
         stdout().flush().unwrap();
     }
-    
+
     fn print_basic_info(&self) {
         println!(
             "Jialox {} | Authored by {} | Finished in {}",
-            self.version,
-            self.authored,
-            self.finished_time,
+            self.version, self.authored, self.finished_time,
         );
     }
-    
 }

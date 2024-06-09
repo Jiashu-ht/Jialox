@@ -66,7 +66,10 @@ impl<'a> Parser<'a> {
         } else {
             None
         };
-        self.consume(TokenType::Semicolon, "Expected ';' after variable declaration.")?;
+        self.consume(
+            TokenType::Semicolon,
+            "Expected ';' after variable declaration.",
+        )?;
         Ok(Stmt::Var(Rc::new(VarStmt { name, initializer })))
     }
 
@@ -164,8 +167,8 @@ impl<'a> Parser<'a> {
             })));
         }
         if self.is_match(&[TokenType::Identifier]) {
-            return Ok(Expr::Variable(Rc::new(VariableExpr { 
-                name: self.previous().mirror() 
+            return Ok(Expr::Variable(Rc::new(VariableExpr {
+                name: self.previous().mirror(),
             })));
         }
         if self.is_match(&[TokenType::LeftParen]) {

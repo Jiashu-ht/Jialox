@@ -23,7 +23,7 @@ impl AstPrinter {
 
 impl ExprVisitor<String> for AstPrinter {
     fn visit_binary_expr(&self, expr: &BinaryExpr) -> Result<String, JialoxError> {
-        self.parenthesize(&expr.operator.as_string(), &[&expr.left, &expr.right])
+        self.parenthesize(&expr.operator.lexeme(), &[&expr.left, &expr.right])
     }
 
     fn visit_grouping_expr(&self, expr: &GroupingExpr) -> Result<String, JialoxError> {
@@ -39,6 +39,6 @@ impl ExprVisitor<String> for AstPrinter {
     }
 
     fn visit_unary_expr(&self, expr: &UnaryExpr) -> Result<String, JialoxError> {
-        self.parenthesize(&expr.operator.as_string(), &[&expr.right])
+        self.parenthesize(&expr.operator.lexeme(), &[&expr.right])
     }
 }

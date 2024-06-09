@@ -37,8 +37,8 @@ impl Token {
     pub fn mirror(&self) -> Token {
         Token {
             ttype: self.ttype,
-            lexeme: self.lexeme.clone(),
-            literal: self.literal.clone(),
+            lexeme: self.lexeme(),
+            literal: self.literal(),
             line: self.line,
         }
     }
@@ -46,10 +46,6 @@ impl Token {
     pub fn literal(&self) -> Option<Literal> {
         self.literal.clone()
     }
-
-    // pub fn as_string(&self) -> String {
-    //     self.lexeme.clone()
-    // }
 
     pub fn line(&self) -> usize {
         self.line
