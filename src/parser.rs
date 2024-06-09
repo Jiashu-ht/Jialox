@@ -2,6 +2,7 @@ use std::rc::Rc;
 
 use crate::error::*;
 use crate::expr::*;
+use crate::stmt::*;
 use crate::token::*;
 use crate::token_type::*;
 
@@ -15,11 +16,35 @@ impl<'a> Parser<'a> {
         Parser { tokens, current: 0 }
     }
 
-    pub fn parse(&mut self) -> Option<Expr> {
-        match self.expression() {
-            Ok(expr) => Some(expr),
-            Err(_) => None,
+    pub fn parse(&mut self) -> Result<Vec<Rc<Stmt>>, JialoxError> {
+        let mut statements = Vec::new();
+        while !self.is_at_end() {
+            statements.push(self.statement()?)
         }
+        Ok(statements)
+    }
+
+    fn statement(&mut self) -> Result<Rc<Stmt>, JialoxError> {
+        if self.is_match(&[TokenType::Print]) {
+            return Ok(Rc::new(self.print_statement()?));
+        }
+        Ok(Rc::new(self.expression_statement()?))
+    }
+
+    fn print_statement(&mut self) -> Result<Stmt, JialoxError> {
+        let value = self.expression()?;
+        self.consume(TokenType::Semicolon, "Expected ';' after value.")?;
+        Ok(Stmt::Print(Rc::new(PrintStmt {
+            expression: Rc::new(value),
+        })))
+    }
+
+    fn expression_statement(&mut self) -> Result<Stmt, JialoxError> {
+        let value = self.expression()?;
+        self.consume(TokenType::Semicolon, "Expected ';' after value.")?;
+        Ok(Stmt::Expression(Rc::new(ExpressionStmt {
+            expression: Rc::new(value),
+        })))
     }
 
     fn expression(&mut self) -> Result<Expr, JialoxError> {

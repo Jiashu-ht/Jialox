@@ -20,6 +20,16 @@ pub fn generate_ast(output_dir: &str) -> io::Result<()> {
             "Unary    : Token operator, Rc<Expr> right",
         ],
     )?;
+
+    define_ast(
+        output_dir,
+        "Stmt",
+        &["error", "expr", "token", "rc"],
+        &[
+            "Expression : Rc<Expr> expression",
+            "Print      : Rc<Expr> expression",
+        ],
+    )?;
     Ok(())
 }
 

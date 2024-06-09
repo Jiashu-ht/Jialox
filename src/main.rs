@@ -1,9 +1,10 @@
 use std::env::args;
 use std::io::{self, stdout, BufRead, Write};
-use std::rc::Rc;
 
 mod error;
 use error::*;
+
+mod stmt;
 
 mod token_type;
 // use token_type::*;
@@ -90,10 +91,11 @@ impl Jialox {
     fn run(&self, source: String) -> Result<(), JialoxError> {
         let mut scanner = Scanner::new(source);
         let tokens = scanner.scan_tokens()?;
-    
         let mut parser = Parser::new(tokens);
-        if let Some(expr) = parser.parse() {
-            self.interpreter.interpret(Rc::new(expr));
+        let statements = parser.parse()?;
+        if let Err(e) = self.interpreter.interpret(&statements) {
+            e.report("");
+            return Err(e);
         }
         Ok(())
     }

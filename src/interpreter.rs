@@ -2,6 +2,7 @@ use std::rc::Rc;
 
 use crate::error::*;
 use crate::expr::*;
+use crate::stmt::*;
 use crate::literal::*;
 use crate::token_type::*;
 
@@ -97,6 +98,19 @@ impl ExprVisitor<Literal> for Interpreter {
     }
 }
 
+impl StmtVisitor<()> for Interpreter {
+    fn visit_expression_stmt(&self, stmt: &ExpressionStmt) -> Result<(), JialoxError> {
+        self.evaluate(stmt.expression.clone())?;
+        Ok(())
+    }
+
+    fn visit_print_stmt(&self, stmt: &PrintStmt) -> Result<(), JialoxError> {
+        let value = self.evaluate(stmt.expression.clone())?;
+        println!("{value}");
+        Ok(())
+    }
+}
+
 impl Interpreter {
     pub fn new() -> Interpreter {
         Interpreter { }
@@ -106,16 +120,20 @@ impl Interpreter {
         expr.accept(self)
     }
 
+    fn execute(&self, stmt: Rc<Stmt>) -> Result<(), JialoxError> {
+        stmt.accept(self)
+    }
+
     /// false and nil are falsey, and everything else is truthy.
     fn is_truthy(&self, literal: &Literal) -> bool {
         !matches!(literal, Literal::Bool(false) | Literal::Nil)
     }
 
-    pub fn interpret(&self, expr: Rc<Expr>) -> bool {
-        match self.evaluate(expr) {
-            Ok(val) => { println!("{val}"); false }
-            Err(e) => { e.report(""); true }
+    pub fn interpret(&self, statements: &[Rc<Stmt>]) -> Result<(), JialoxError> {
+        for statement in statements {
+            self.execute(statement.clone())?;
         }
+        Ok(())
     }
 }
 
